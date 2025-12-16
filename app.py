@@ -129,7 +129,7 @@ st.markdown(f"<h1>{TITLE}</h1>", unsafe_allow_html=True)
 st.markdown(
     """
     <div class='subtitle-mj'>
-    คนดีของพี่ แยกสีได้เลย 💋 ✦ วิเคราะห์เฉดสีจากภาพ พร้อมชื่อสี RGB / HEX ระดับพรีเมียม
+    Luxury Color Intelligence ✦ วิเคราะห์เฉดสีจากภาพ พร้อมชื่อสี RGB / HEX ระดับพรีเมียม
     </div>
     """,
     unsafe_allow_html=True
@@ -140,12 +140,23 @@ def rgb_to_name(rgb_triplet):
     try:
         return webcolors.rgb_to_name(rgb_triplet)
     except ValueError:
-        min_colors = {}
-        for name in webcolors.CSS3_NAMES_TO_HEX:
-            hex_code = webcolors.name_to_hex(name)
+        min_distance = None
+        closest_name = "Unknown"
+
+        # ใช้ internal mapping (รองรับทุกเวอร์ชัน)
+        for hex_code, name in webcolors._definitions._CSS3_HEX_TO_NAMES.items():
             r, g, b = webcolors.hex_to_rgb(hex_code)
-            min_colors[(r-rgb_triplet[0])**2 + (g-rgb_triplet[1])**2 + (b-rgb_triplet[2])**2] = name
-        return min_colors[min(min_colors.keys())]
+            distance = (
+                (r - rgb_triplet[0]) ** 2 +
+                (g - rgb_triplet[1]) ** 2 +
+                (b - rgb_triplet[2]) ** 2
+            )
+
+            if min_distance is None or distance < min_distance:
+                min_distance = distance
+                closest_name = name
+
+        return closest_name
 
 def rgb_to_hex(rgb_triplet):
     return '#{:02x}{:02x}{:02x}'.format(*rgb_triplet)
